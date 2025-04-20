@@ -32,6 +32,10 @@
   --pattern-ui: oklch(0.715 0.143 215.221);
   --pattern-lab: oklch(0.696 0.17 162.48);
 }
+.sidebar-link.active {
+    border-left: 4px solid #4CAF50;  /* Green border */
+    color: #4CAF50;  /* Green color */
+}
 .dark {
   --background: oklch(0.160 0 0);
   --foreground: oklch(0.985 0 0);

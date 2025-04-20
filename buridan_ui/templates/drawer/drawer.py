@@ -14,7 +14,7 @@ def drawer():
                     "top": "auto",
                     "right": "auto",
                     "height": "100%",
-                    "background": rx.color("gray", 2),
+                    "background": "var(--background)",
                 },
             ),
             z_index="50",

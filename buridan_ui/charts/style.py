@@ -32,10 +32,34 @@ tooltip = {
 }
 
 
-def info(title: str, size: str, subtitle: str, align: str) -> rx.Component:
+def info(title: str, size: str, subtitle: str, align: str):
     return rx.vstack(
         rx.heading(title, size=size, weight="bold"),
         rx.text(subtitle, size="1", color=rx.color("slate", 11), weight="medium"),
         spacing="1",
         align=align,
+    )
+
+
+def get_tooltip():
+    """Standard tooltip for all charts."""
+    return rx.recharts.graphing_tooltip(**tooltip)
+
+
+def get_cartesian_grid():
+    """Standard cartesian grid for charts."""
+    return rx.recharts.cartesian_grid(
+        horizontal=True, vertical=False, class_name="opacity-25"
+    )
+
+
+def get_x_axis(data_key: str):
+    """Standard X axis configuration."""
+    return rx.recharts.x_axis(
+        data_key=data_key,
+        axis_line=False,
+        tick_size=10,
+        tick_line=False,
+        custom_attrs={"fontSize": "12px"},
+        interval="preserveStartEnd",
     )

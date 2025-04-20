@@ -45,7 +45,6 @@ def component_wrapper(path: str):
         @wraps(func)
         def wrapper():
             component, component_code, flexgen_path = func()
-
             return rx.box(
                 rx.box(
                     rx.el.label(
@@ -67,7 +66,6 @@ def component_wrapper(path: str):
                         button_with_link("github", path),
                         class_name="flex align-center gap-2",
                     ),
-                    # border_bottom=f"0.81px solid {rx.color('gray', 5)}",
                     class_name="px-5 pt-4 pb-2 w-full flex align-center justify-between items-center",
                 ),
                 rx.box(

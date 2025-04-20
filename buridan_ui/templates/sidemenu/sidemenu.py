@@ -1,14 +1,19 @@
 from __future__ import annotations
 
-from reflex.constants.colors import Color
 from reflex.experimental import ClientStateVar
 
 from buridan_ui.config import VERSION
 from buridan_ui.static.scripts import count_python_files_in_folder
 from buridan_ui.templates.sidemenu.download import download_site_source
-from buridan_ui.static.routes import ChartRoutes, PantryRoutes, GettingStartedRoutes
+from buridan_ui.static.routes import (
+    ChartRoutes,
+    PantryRoutes,
+    GettingStartedRoutes,
+    BuridanProRoutes,
+)
 
 import reflex as rx
+
 
 # Centralized state variables
 SIDEBAR_STATES = {
@@ -16,6 +21,7 @@ SIDEBAR_STATES = {
     "getting_started": ClientStateVar.create("getting_started", False),
     "chart": ClientStateVar.create("chart", False),
     "pantry": ClientStateVar.create("pantry", False),
+    "pro": ClientStateVar.create("pro", False),
 }
 
 
@@ -82,7 +88,38 @@ def side_bar_wrapper(title: str, component, state_key: str):
     return rx.el.div(
         state,
         rx.el.div(
-            rx.el.label(title, class_name=get_text_style(is_bold=True)),
+            rx.el.div(
+                rx.el.label(title, class_name=get_text_style(is_bold=True)),
+                (
+                    rx.hover_card.root(
+                        rx.hover_card.trigger(
+                            rx.icon(
+                                tag="info",
+                                class_name="size-4 cursor-pointer",
+                                color=rx.color("slate", 11),
+                            ),
+                        ),
+                        rx.hover_card.content(
+                            rx.el.div(
+                                rx.el.label(
+                                    "Buridan Pro (coming soon)",
+                                    class_name="text-xs font-bold",
+                                ),
+                                rx.el.label(
+                                    "Unlock advanced components and features with a Pro subscription.",
+                                    class_name="text-xs",
+                                ),
+                                class_name="flex flex-col gap-y-2",
+                            ),
+                            size="1",
+                            width="250px",
+                        ),
+                    )
+                    if state_key == "pro"
+                    else rx.spacer()
+                ),
+                class_name="flex flex-row items-center gap-x-2",
+            ),
             rx.el.div(
                 rx.box(
                     rx.cond(
@@ -105,7 +142,7 @@ def side_bar_wrapper(title: str, component, state_key: str):
     )
 
 
-def create_sidebar_menu_items(routes: list[dict[str, str | Color]]):
+def create_sidebar_menu_items(routes: list[dict[str, str]]):
     """Create menu items from routes."""
 
     def item(data):
@@ -122,11 +159,7 @@ def create_sidebar_menu_items(routes: list[dict[str, str | Color]]):
             class_name="w-full",
         )
 
-    return rx.vstack(
-        rx.foreach(routes, item),
-        spacing="0",
-        width="100%",
-    )
+    return rx.vstack(rx.foreach(routes, item), spacing="0", width="100%")
 
 
 def create_section_description(text_parts):
@@ -134,7 +167,7 @@ def create_section_description(text_parts):
     return rx.el.label(
         *text_parts,
         class_name="text-sm font-light pt-1 pb-2 "
-        + rx.color_mode_cond("text-slate-700", "text-slate-200").to(str),
+        + rx.color_mode_cond("text-slate-600", "text-slate-300").to(str),
     )
 
 
@@ -147,6 +180,7 @@ def create_divider():
 
 def sidemenu(in_drawer=False):
     """Main sidemenu component."""
+
     # Display logic for responsive design
     sidebar_display = (
         ["none" if i <= 3 else "flex" for i in range(6)] if not in_drawer else "flex"
@@ -192,6 +226,22 @@ def sidemenu(in_drawer=False):
         class_name="flex flex-col p-0 m-0",
     )
 
+    pro_count = count_python_files_in_folder("buridan_ui/pro")
+    pro_components_content = rx.el.div(
+        create_section_description(
+            [
+                "Get access to ",
+                rx.el.span(f"{pro_count} ", class_name="text-sm font-bold"),
+                "carefully designed block to build dashboards and data apps even faster.",
+            ]
+        ),
+        rx.el.div(
+            create_sidebar_menu_items(BuridanProRoutes),
+            class_name="flex flex-row h-full w-full gap-x-2",
+        ),
+        class_name="flex flex-col p-0 m-0",
+    )
+
     pantry_count = count_python_files_in_folder("buridan_ui/pantry")
     pantry_components_content = rx.el.div(
         create_section_description(
@@ -232,13 +282,14 @@ def sidemenu(in_drawer=False):
         border_bottom=f"1.25px dashed {rx.color('gray', 5)}",
         class_name="w-full h-12 px-4 py-3 absolute top-0 left-0 z-[99] bg-background",
     )
-
     # Main content
     content = rx.el.div(
         header,
         side_bar_wrapper("Site Settings", site_settings_content, "site_settings"),
         create_divider(),
         side_bar_wrapper("Getting Started", getting_started_content, "getting_started"),
+        create_divider(),
+        side_bar_wrapper("Data App Components", pro_components_content, "pro"),
         create_divider(),
         side_bar_wrapper("Chart Components", chart_components_content, "chart"),
         create_divider(),
@@ -252,4 +303,62 @@ def sidemenu(in_drawer=False):
         height="100vh",
         class_name="flex flex-col max-w-[300px] w-full gap-y-2 align-start sticky top-0 left-0 [&_.rt-ScrollAreaScrollbar]:mr-[0.1875rem] [&_.rt-ScrollAreaScrollbar]:mt-[4rem] z-[10] [&_.rt-ScrollAreaScrollbar]:mb-[1rem]",
         display=sidebar_display,
+    )
+
+
+def sidemenu_right():
+    from buridan_ui.wrappers.base.main import create_responsive_display
+
+    return rx.scroll_area(
+        rx.el.div(
+            border_bottom=f"1.25px dashed {rx.color('gray', 5)}",
+            class_name="w-full h-12 px-4 py-3 absolute top-0 left-0 z-[99] bg-background",
+        ),
+        rx.box(
+            rx.box(
+                rx.box(
+                    rx.el.label(
+                        "Reflex Build",
+                        class_name="text-sm font-bold "
+                        + rx.color_mode_cond("text-slate-700", "text-slate-200").to(
+                            str
+                        ),
+                    ),
+                    rx.el.label(
+                        "Build smarter, faster, and more efficiently with Reflex's AI builder.",
+                        class_name="text-sm font-light pt-1 pb-2 "
+                        + rx.color_mode_cond("text-slate-600", "text-slate-300").to(
+                            str
+                        ),
+                    ),
+                    rx.el.label(
+                        "Reflex streamlines Python app development with powerful AI tools and seamless deployment.",
+                        class_name="text-sm font-light pt-1 pb-2 "
+                        + rx.color_mode_cond("text-slate-600", "text-slate-300").to(
+                            str
+                        ),
+                    ),
+                    rx.el.a(
+                        rx.el.label(
+                            "Start Building",
+                            color=rx.color("slate", 12),
+                            class_name="text-sm",
+                        ),
+                        target="_blank",
+                        href="https://reflex.build/",
+                        _hover={"background": rx.color("accent", 8)},
+                        background=rx.color("accent", 7),
+                        class_name="cursor-pointer p-2 flex items-center justify-center rounded-md",
+                    ),
+                    class_name="flex flex-col w-full h-full p-2 gap-y-2",
+                ),
+                color=rx.color("gray", 4),
+                class_name="flex flex-col gap-y-2 p-2 w-full inset-0 col-start-2 row-span-full row-start-1 max-sm:hidden bg-[size:10px_10px] bg-fixed bg-[image:repeating-linear-gradient(315deg,currentColor_0,currentColor_1px,_transparent_0,_transparent_50%)]",
+            ),
+            color=rx.color("gray", 4),
+            class_name=" w-full p-2",
+        ),
+        height="100vh",
+        class_name="flex flex-col max-w-[280px] w-full gap-y-2 align-start sticky top-0 left-0 [&_.rt-ScrollAreaScrollbar]:mr-[0.1875rem] [&_.rt-ScrollAreaScrollbar]:mt-[4rem] z-[10] [&_.rt-ScrollAreaScrollbar]:mb-[1rem] pt-12",
+        display=create_responsive_display("none", "flex"),  # Hide on small screens
     )

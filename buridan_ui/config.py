@@ -7,6 +7,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 # Navigate up to your project root if needed
 project_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
 
+LOCAL_BASE_PRO_PATH = os.path.join(project_root, "buridan_ui", "buridan_ui", "pro")
 LOCAL_BASE_CHART_PATH = os.path.join(project_root, "buridan_ui", "buridan_ui", "charts")
 LOCAL_BASE_PANTRY_PATH = os.path.join(
     project_root, "buridan_ui", "buridan_ui", "pantry"
@@ -14,6 +15,8 @@ LOCAL_BASE_PANTRY_PATH = os.path.join(
 
 # ------------------------ DO NOT EDIT ---------------------------- #
 VERSION = "v.0.6.1"
+
+
 BASE_PANTRY_PATH = (
     "https://github.com/LineIndent/buridan-ui/blob/main/buridan_ui/pantry/"
 )
@@ -24,7 +27,7 @@ BASE_CHART_PATH = (
 
 SiteFont = "https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
 
-SiteTheme = "inherit"
+SiteTheme = "dark"
 
 # original font family:  "IBM Plex Mono,ui-monospace,monospace"
 FontFamily = "JetBrains Mono,ui-monospace,monospace"

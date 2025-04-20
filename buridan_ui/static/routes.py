@@ -2,6 +2,12 @@
 _GS_Base = "/getting-started/"
 _P = "/pantry/"
 _C = "/charts/"
+_Pro = "/pro/"
+
+# ... pro routes
+BuridanProRoutes = [
+    {"name": "Integrated Tables", "path": f"{_Pro}integrated-tables", "dir": "table"},
+]
 
 # ... getting started paths
 GettingStartedRoutes = [
@@ -9,13 +15,13 @@ GettingStartedRoutes = [
     {"name": "Who is Buridan?", "path": f"{_GS_Base}who-is-buridan", "dir": "buridan"},
     {"name": "Installation", "path": f"{_GS_Base}installation", "dir": "installation"},
     {"name": "Charting Walkthrough", "path": f"{_GS_Base}charting", "dir": "charting"},
-    {"name": "Flexgen", "path": f"{_GS_Base}flexgen", "dir": "flexgen"},
     {"name": "Changelog", "path": f"{_GS_Base}changelog", "dir": "changelog"},
 ]
 
 # ... pantry component paths
 PantryRoutes = sorted(
     [
+        {"name": "Tabs", "path": f"{_P}tabs", "dir": "tabs"},
         {"name": "Sidebars", "path": f"{_P}sidebars", "dir": "sidebars"},
         {"name": "Accordions", "path": f"{_P}accordions", "dir": "accordions"},
         {"name": "Logins", "path": f"{_P}logins", "dir": "logins"},

@@ -1,169 +1,14 @@
-# from functools import wraps
-# from typing import Callable
-#
-# import reflex as rx
-# from buridan_ui.templates.drawer.drawer import drawer
-# from buridan_ui.templates.footer.footer import desktop_footer, footer
-# from buridan_ui.templates.sidemenu.sidemenu import sidemenu
-#
-# from .utils.routes import base_content_path_ui
-# from ...templates.settings.settings import app_settings
-#
-#
-# def base_footer_responsive(component: rx.Component, start: str, end: str):
-#     return rx.box(
-#         component,
-#         display=[start if i <= 3 else end for i in range(6)],
-#         width="100%",
-#     )
-#
-#
-# def page_meta(created, updated, dir_count):
-#     return rx.el.div(
-#         rx.el.div(
-#             rx.icon(
-#                 tag="file-plus-2",
-#                 size=13,
-#                 color=rx.color("slate", 11),
-#             ),
-#             rx.el.label(
-#                 created,
-#                 class_name="text-sm",
-#             ),
-#             class_name="flex flex-row items-center justify-start gap-x-2",
-#             title="Created On",
-#         ),
-#         rx.el.div(
-#             rx.icon(
-#                 tag="file-pen-line",
-#                 size=13,
-#                 color=rx.color("slate", 11),
-#             ),
-#             rx.el.label(
-#                 updated,
-#                 class_name="text-sm",
-#             ),
-#             class_name="flex flex-row items-center justify-start gap-x-2",
-#             title="Last Update",
-#         ),
-#         rx.el.div(
-#             rx.icon(
-#                 tag="cuboid",
-#                 size=13,
-#                 color=rx.color("slate", 11),
-#             ),
-#             rx.el.label(
-#                 f"{dir_count} Component(s)",
-#                 class_name="text-sm",
-#             ),
-#             class_name="flex flex-row items-center justify-start gap-x-2",
-#         ),
-#         class_name="flex flex-row flex-wrap items-center gap-x-6 gap-y-4",
-#     )
-#
-#
-# def base(url: str, page_name: str, dir_meta: list[str | int] = []):
-#     def decorator(content: Callable[[], list[rx.Component]]):
-#         @wraps(content)
-#         def template():
-#             contents = content()
-#
-#             # Properly handle the conditional
-#             if dir_meta:
-#                 created, updated, dir_count = dir_meta
-#                 meta = page_meta(created, updated, dir_count)
-#
-#             else:
-#                 meta = rx.el.div(class_name="hidden")
-#
-#             return rx.hstack(
-#                 sidemenu(),
-#                 rx.box(
-#                     border_left=f"1.25px dashed {rx.color('gray', 5)}",
-#                     border_right=f"1.25px dashed {rx.color('gray', 5)}",
-#                     color=rx.color("gray", 3),
-#                     class_name="h-full p-4 col-start-2 row-span-full row-start-1 max-sm:hidden bg-[size:10px_10px] bg-fixed bg-[image:repeating-linear-gradient(315deg,currentColor_0,currentColor_1px,_transparent_0,_transparent_50%)]",
-#                 ),
-#                 rx.scroll_area(
-#                     # absolute navbar ...
-#                     rx.el.div(
-#                         rx.el.label(
-#                             base_content_path_ui(url),
-#                             class_name="text-sm font-bold font-sans flex items-center align-center gap-x-2",
-#                             display=["none" if i <= 3 else "flex" for i in range(6)],
-#                         ),
-#                         rx.el.label(
-#                             "buridan/ui",
-#                             class_name="text-sm font-bold font-sans flex items-center align-center gap-x-2",
-#                             display=["flex" if i <= 3 else "none" for i in range(6)],
-#                         ),
-#                         rx.el.div(
-#                             app_settings(),
-#                             rx.box(
-#                                 drawer(),
-#                                 display=[
-#                                     "flex" if i <= 3 else "none" for i in range(6)
-#                                 ],
-#                             ),
-#                             class_name="flex flex-row gap-x-2",
-#                         ),
-#                         border_bottom=f"1.25px dashed {rx.color('gray', 5)}",
-#                         class_name="w-full h-12 px-4 py-3 absolute top-0 left-0 z-[999] flex flex-row justify-between align-center items-center gap-x-2 bg-background",
-#                     ),
-#                     # ... title
-#                     rx.el.div(
-#                         rx.el.div(
-#                             rx.el.label(
-#                                 page_name,
-#                                 class_name="text-4xl sm:4xl font-bold py-6",
-#                             ),
-#                             meta,
-#                             class_name="w-full justify-start flex flex-col pb-9 pl-4",
-#                         ),
-#                         *contents,
-#                         class_name="flex flex-col p-0 gap-y-2 min-h-[100vh] w-full",
-#                     ),
-#                     # rx.box(
-#                     #     border_top=f"1.25px dashed {rx.color('gray', 5)}",
-#                     #     border_bottom=f"1.25px dashed {rx.color('gray', 5)}",
-#                     #     color=rx.color("gray", 3),
-#                     #     class_name="w-full p-5 col-start-2 row-span-full row-start-1 bg-[size:10px_10px] bg-fixed bg-[image:repeating-linear-gradient(315deg,currentColor_0,currentColor_1px,_transparent_0,_transparent_50%)]",
-#                     # ),
-#                     rx.el.div(
-#                         base_footer_responsive(desktop_footer(), "none", "flex"),
-#                         base_footer_responsive(footer(), "flex", "none"),
-#                         class_name="flex flex-col w-full lg:px-4 xl:px-4 px-1 py-2",
-#                         border_top=f"1.25px dashed {rx.color('gray', 5)}",
-#                     ),
-#                     # ...fix scrollbar scroller appearance?? original 0.1something
-#                     class_name="flex flex-col w-full gap-y-2 align-start z-[10] pt-14 [&_.rt-ScrollAreaScrollbar]:mt-[4rem] [&_.rt-ScrollAreaScrollbar]:mb-[1rem]",
-#                     height=["100%" if i == 0 else "100vh" for i in range(6)],
-#                 ),
-#                 rx.box(
-#                     border_left=f"1.25px dashed {rx.color('gray', 5)}",
-#                     border_right=f"1.25px dashed {rx.color('gray', 5)}",
-#                     color=rx.color("gray", 3),
-#                     class_name="h-full p-4 col-start-2 row-span-full row-start-1 max-sm:hidden bg-[size:10px_10px] bg-fixed bg-[image:repeating-linear-gradient(315deg,currentColor_0,currentColor_1px,_transparent_0,_transparent_50%)]",
-#                 ),
-#                 # height=["100%" if i == 0 else "100vh" for i in range(6)],
-#                 class_name="w-[100%] h-[100vh] gap-x-0 bg-background",
-#             )
-#
-#         return template
-#
-#     return decorator
-
-
 from functools import wraps
 from typing import Callable, List, Optional
 
 import reflex as rx
+from reflex.experimental import ClientStateVar
+
 from buridan_ui.templates.drawer.drawer import drawer
 from buridan_ui.templates.footer.footer import desktop_footer, footer
-from buridan_ui.templates.sidemenu.sidemenu import sidemenu
+from buridan_ui.templates.sidemenu.sidemenu import sidemenu, sidemenu_right
 
-from .utils.routes import base_content_path_ui
-from ...templates.settings.settings import app_settings
+from buridan_ui.wrappers.base.utils.routes import base_content_path_ui
 
 
 def create_responsive_display(
@@ -286,7 +131,66 @@ def create_pattern_background():
         border_left=create_border(),
         border_right=create_border(),
         color=rx.color("gray", 3),
-        class_name="h-full p-4 col-start-2 row-span-full row-start-1 max-sm:hidden bg-[size:10px_10px] bg-fixed bg-[image:repeating-linear-gradient(315deg,currentColor_0,currentColor_1px,_transparent_0,_transparent_50%)]",
+        class_name="h-full p-3 col-start-2 row-span-full row-start-1 max-sm:hidden bg-[size:10px_10px] bg-fixed bg-[image:repeating-linear-gradient(315deg,currentColor_0,currentColor_1px,_transparent_0,_transparent_50%)]",
+    )
+
+
+ActiveTab = ClientStateVar.create("active_tab", 0)
+
+
+def tab_selector(tabs=None):
+    """
+    A tab selector component with a nice active tab highlighting.
+
+    Args:
+        tabs: List of tab names to display
+        on_tab_change: Optional callback function when tab changes
+
+    Returns:
+        The tab selector component
+    """
+
+    return rx.box(
+        rx.hstack(
+            *[
+                rx.button(
+                    rx.text(
+                        tab,
+                        color=rx.cond(
+                            ActiveTab.value == i,
+                            rx.color("slate", 12),  # Active text color
+                            rx.color("slate", 10),  # Inactive text color
+                        ),
+                    ),
+                    on_click=[
+                        rx.call_function(ActiveTab.set_value(i)),
+                    ],
+                    aria_disabled="false",
+                    background=rx.cond(
+                        ActiveTab.value == i,
+                        rx.color("gray", 3),  # Active background color
+                        "transparent",  # Inactive background (transparent)
+                    ),
+                    cursor="pointer",
+                    class_name=rx.cond(
+                        ActiveTab.value == i,
+                        # Active tab styling (without color references)
+                        "group inline-flex items-center justify-center whitespace-nowrap py-2 align-middle font-semibold "
+                        "transition-all duration-300 ease-in-out min-w-[32px] "
+                        "gap-1.5 text-xs "
+                        "h-6 w-full rounded-md px-3 drop-shadow sm:w-auto",
+                        # Inactive tab styling (without color references)
+                        "group inline-flex items-center justify-center whitespace-nowrap rounded-lg py-2 align-middle "
+                        "font-semibold transition-all duration-300 ease-in-out "
+                        "min-w-[32px] gap-1.5 text-xs "
+                        "h-6 w-full bg-transparent px-3 sm:w-auto",
+                    ),
+                )
+                for i, tab in enumerate(tabs)
+            ],
+            class_name="inline-flex h-8.5 w-full items-baseline justify-start rounded-lg p-1 sm:w-auto",
+            border=create_border(),
+        )
     )
 
 
@@ -311,7 +215,8 @@ def create_header(url: str):
             display=create_responsive_display("flex", "none"),
         ),
         rx.el.div(
-            app_settings(),
+            # app_settings(),
+            # tab_selector(tabs=["Free", "Pro"]),
             rx.box(
                 drawer(),
                 display=create_responsive_display("flex", "none"),
@@ -319,7 +224,7 @@ def create_header(url: str):
             class_name="flex flex-row gap-x-2",
         ),
         border_bottom=create_border(),
-        class_name="w-full h-12 px-4 py-3 absolute top-0 left-0 z-[999] flex flex-row justify-between align-center items-center gap-x-2 bg-background",
+        class_name="w-full h-12 px-4 py-3 absolute top-0 left-0 z-[20] flex flex-row justify-between align-center items-center gap-x-2 bg-background",
     )
 
 
@@ -404,6 +309,7 @@ def base(url: str, page_name: str, dir_meta: List[str | int] = []):
                     height=["100%" if i == 0 else "100vh" for i in range(6)],
                 ),
                 create_pattern_background(),
+                sidemenu_right(),
                 class_name="w-[100%] h-[100vh] gap-x-0 bg-background",
             )
 

@@ -1,9 +1,8 @@
 import reflex as rx
 
 from buridan_ui.landing.hero import hero
-from buridan_ui.static.routes import ChartRoutes, PantryRoutes
-from buridan_ui.static.meta import ChartMetaData, PantryMetaData
-from buridan_ui.start.flexgen import flexgen
+from buridan_ui.static.routes import ChartRoutes, PantryRoutes, BuridanProRoutes
+from buridan_ui.static.meta import ChartMetaData, PantryMetaData, ProMetaData
 from buridan_ui.start.buridan import buridan
 from buridan_ui.start.charting import charting
 from buridan_ui.start.installation import installation
@@ -16,6 +15,7 @@ from buridan_ui.templates.settings.settings import SiteThemeColor
 from buridan_ui.export import (
     charts_exports_config,
     pantry_exports_config,
+    pro_exports_config,
     filter_routes,
 )
 
@@ -35,7 +35,13 @@ app = rx.App(
 
 
 def get_exports(directory: str, config_file: dict[str, list[callable]]):
-    return [export for export in config_file[directory]]
+    try:
+        return [export for export in config_file[directory]]
+    except KeyError:
+        print(
+            f"KeyError: Directory '{directory}' not found in config_file. Available keys: {list(config_file.keys())}"
+        )
+        raise
 
 
 def add_routes(
@@ -43,7 +49,14 @@ def add_routes(
     export_config: dict[str, list[callable]],
     parent_dir: str,
 ) -> None:
-    metadata_source = ChartMetaData if parent_dir == "charts" else PantryMetaData
+    if parent_dir == "charts":
+        metadata_source = ChartMetaData
+
+    if parent_dir == "pantry":
+        metadata_source = PantryMetaData
+
+    if parent_dir == "pro":
+        metadata_source = ProMetaData
 
     # Filter the routes based on development settings
     filtered_routes = filter_routes(routes)
@@ -72,6 +85,7 @@ def add_page(page_component, route_path, title):
 # Add dynamic routes from configurations
 add_routes(ChartRoutes, charts_exports_config, "charts")
 add_routes(PantryRoutes, pantry_exports_config, "pantry")
+add_routes(BuridanProRoutes, pro_exports_config, "pro")
 
 # Define static routes with consistent structure
 STATIC_ROUTES = [
@@ -104,11 +118,6 @@ STATIC_ROUTES = [
         "path": "/getting-started/charting",
         "component": charting,
         "title": "Charting - Buridan UI",
-    },
-    {
-        "path": "/getting-started/flexgen",
-        "component": flexgen,
-        "title": "Flexgen - Buridan UI",
     },
 ]
 

@@ -13,7 +13,8 @@ class ExportConfig:
     def __init__(self):
         # Component configurations
         self.COMPONENTS = {
-            "sidebars": {"versions": range(1, 4), "func_prefix": "sidebar"},
+            "tabs": {"versions": range(1, 4), "func_prefix": "tab"},
+            "sidebars": {"versions": range(1, 2), "func_prefix": "sidebar"},
             "accordions": {"versions": range(1, 2), "func_prefix": "accordion"},
             "animations": {"versions": range(1, 7), "func_prefix": "animation"},
             "backgrounds": {"versions": range(1, 5), "func_prefix": "background"},
@@ -54,6 +55,11 @@ class ExportConfig:
             "chord": {"versions": [1], "func_prefix": "chord"},
         }
 
+        # Pro configurations
+        self.PRO = {
+            "table": {"versions": range(1, 2), "func_prefix": "integrated_table"},
+        }
+
         # Grid configurations
         self.GRID_CONFIGS = {
             "animations": {"lg": 2, "gap": 8},
@@ -64,10 +70,12 @@ class ExportConfig:
         self.development_mode = False
         self.selected_components = set()
         self.selected_charts = set()
+        self.selected_pro = set()
 
         # Keep a complete list of all component and chart names
         self.all_component_names = set(self.COMPONENTS.keys())
         self.all_chart_names = set(self.CHARTS.keys())
+        self.all_pro_names = set(self.PRO.keys())
 
         # Initialize development environment from environment variables
         self._init_from_env()
@@ -93,20 +101,28 @@ class ExportConfig:
                     c.strip() for c in charts.split(",") if c.strip()
                 }
 
+            pro = os.environ.get("BURIDAN_PRO", "")
+            if pro:
+                self.selected_pro = {c.strip() for c in pro.split(",") if c.strip()}
+
             # Print development settings
             print("Development mode: Enabled")
             if self.selected_components:
                 print(f"Selected components: {', '.join(self.selected_components)}")
             if self.selected_charts:
                 print(f"Selected charts: {', '.join(self.selected_charts)}")
+            if self.selected_pro:
+                print(f"Selected pro components: {', '.join(self.selected_pro)}")
 
     def should_include_component(self, component_name: str) -> bool:
         """Check if a component should be included based on development settings."""
         if not self.development_mode:
             return True
 
-        # If charts are specifically selected and components aren't, exclude all components
-        if self.selected_charts and not self.selected_components:
+        # If charts or pro are specifically selected and components aren't, exclude all components
+        if (self.selected_charts and not self.selected_components) or (
+            self.selected_pro and not self.selected_components
+        ):
             return False
 
         if not self.selected_components:
@@ -119,14 +135,32 @@ class ExportConfig:
         if not self.development_mode:
             return True
 
-        # If components are specifically selected and charts aren't, exclude all charts
-        if self.selected_components and not self.selected_charts:
+        # If components or pro are specifically selected and charts aren't, exclude all charts
+        if (self.selected_components and not self.selected_charts) or (
+            self.selected_pro and not self.selected_charts
+        ):
             return False
 
         if not self.selected_charts:
             return True
 
         return chart_name in self.selected_charts
+
+    def should_include_pro(self, pro_name: str) -> bool:
+        """Check if a pro component should be included based on development settings."""
+        if not self.development_mode:
+            return True
+
+        # If components or charts are specifically selected and pro aren't, exclude all pro components
+        if (self.selected_components and not self.selected_pro) or (
+            self.selected_charts and not self.selected_pro
+        ):
+            return False
+
+        if not self.selected_pro:
+            return True
+
+        return pro_name in self.selected_pro
 
 
 # Create a singleton config instance
@@ -135,6 +169,12 @@ config = ExportConfig()
 
 class SourceRetriever:
     """Class to handle different source code retrieval strategies"""
+
+    @staticmethod
+    def pro_source(directory: str, filename: str) -> str:
+        """Get source for pantry components."""
+        with open(os.path.join("buridan_ui", "pro", directory, filename)) as file:
+            return file.read()
 
     @staticmethod
     def pantry_source(directory: str, filename: str) -> str:
@@ -162,6 +202,32 @@ class SourceRetriever:
 
 class ExportFactory:
     """Factory class for creating exports"""
+
+    @staticmethod
+    def create_pro_export(
+        directory: str,
+        version: int,
+        func_prefix: str,
+        flexgen_url: str = "",
+    ) -> Callable:
+        """Create an export function for a pro component."""
+        # Import the component dynamically
+        component_func = ExportFactory._import_component(
+            base_module="buridan_ui.pro",
+            directory=directory,
+            version=version,
+            func_prefix=func_prefix,
+        )
+
+        @component_wrapper(f"{BASE_PANTRY_PATH}{directory}/v{version}.py")
+        def export():
+            return [
+                component_func(),
+                SourceRetriever.pro_source(directory, f"v{version}.py"),
+                flexgen_url,
+            ]
+
+        return export
 
     @staticmethod
     def create_pantry_export(
@@ -235,6 +301,38 @@ class ExportFactory:
             return getattr(module, func_name)
         except (ImportError, AttributeError) as e:
             raise ImportError(f"Failed to import {func_name} from {module_path}: {e}")
+
+
+def generate_pro_exports() -> Dict[str, List]:
+    """Generate all pro component exports dynamically."""
+    exports = {}
+
+    # Filter components if in development mode
+    component_configs = {}
+    for name, details in config.PRO.items():
+        if config.should_include_pro(name):
+            component_configs[name] = details
+
+    for directory, details in component_configs.items():
+        versions = details["versions"]
+        func_prefix = details["func_prefix"]
+        component_exports = []
+        export_items = []
+
+        for version in versions:
+            export_func = ExportFactory.create_pro_export(
+                directory, version, func_prefix
+            )
+            export_items.append(export_func())
+
+        # Get any custom grid config for this component type
+        grid_config = config.GRID_CONFIGS.get(directory, {})
+
+        # Use responsive_grid to organize the exports
+        component_exports.append(responsive_grid(*export_items, **grid_config))
+        exports[directory] = component_exports
+
+    return exports
 
 
 def generate_pantry_exports() -> Dict[str, List]:
@@ -327,6 +425,9 @@ def filter_routes(routes_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             elif directory in config.all_chart_names:
                 if config.should_include_chart(directory):
                     filtered_routes.append(route)
+            elif directory in config.all_pro_names:
+                if config.should_include_pro(directory):
+                    filtered_routes.append(route)
             else:
                 # If it's neither, include it by default
                 filtered_routes.append(route)
@@ -338,5 +439,6 @@ def filter_routes(routes_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 
 # Generate the exports based on the configuration
+pro_exports_config = generate_pro_exports()
 pantry_exports_config = generate_pantry_exports()
 charts_exports_config = generate_chart_exports()

@@ -39,6 +39,7 @@ tailwind_config = {
                 "sidebar-ring": "var(--sidebar-ring)",
                 "pattern-ui": "var(--pattern-ui)",
                 "pattern-lab": "var(--pattern-lab)",
+                "active-link": "#4CAF50",
             },
             "borderRadius": {
                 "DEFAULT": "var(--radius)",
