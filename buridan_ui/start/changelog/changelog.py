@@ -101,6 +101,32 @@ def changelog():
             rx.box(
                 rx.vstack(
                     wrapper(
+                        "New Features, Pro Tier, and Improvements",
+                        "April 20, 2025",
+                        [
+                            info(
+                                "Introduced Buridan Pro — gated access to premium components."
+                            ),
+                            info(
+                                "Added development helper script: `dev.sh` for local testing & filtering."
+                            ),
+                            info(
+                                "Implemented active sidebar highlighting based on current route."
+                            ),
+                            info(
+                                "Improved layout: breadcrumb in main content, version in left sidebar."
+                            ),
+                            info(
+                                "Right sidebar now includes a persistent header and optional callouts."
+                            ),
+                            info(
+                                "Refined styling and responsiveness across components."
+                            ),
+                            info("Minor bug fixes and performance improvements."),
+                            changelog_badge("sparkles", "buridan/ui v0.6.2"),
+                        ],
+                    ),
+                    wrapper(
                         "Site Refactoring & Major Changes",
                         "March 22, 2025",
                         [
