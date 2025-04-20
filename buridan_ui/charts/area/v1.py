@@ -1,6 +1,11 @@
 import reflex as rx
 
-from ..style import info, tooltip
+from buridan_ui.charts.style import (
+    info,
+    get_tooltip,
+    get_cartesian_grid,
+    get_x_axis,
+)
 
 
 def areachart_v1():
@@ -22,23 +27,14 @@ def areachart_v1():
                 "start",
             ),
             rx.recharts.area_chart(
-                rx.recharts.graphing_tooltip(**tooltip),
-                rx.recharts.cartesian_grid(
-                    horizontal=True, vertical=False, class_name="opacity-25"
-                ),
+                get_tooltip(),
+                get_cartesian_grid(),
                 rx.recharts.area(
                     data_key="desktop",
                     fill=rx.color("accent"),
                     stroke=rx.color("accent", 8),
                 ),
-                rx.recharts.x_axis(
-                    data_key="month",
-                    axis_line=False,
-                    tick_size=10,
-                    tick_line=False,
-                    custom_attrs={"fontSize": "12px"},
-                    interval="preserveStartEnd",
-                ),
+                get_x_axis("month"),
                 data=data,
                 width="100%",
                 height=250,

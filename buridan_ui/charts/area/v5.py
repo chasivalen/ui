@@ -197,7 +197,6 @@ def areachart_v5():
                     custom_attrs={"fontSize": "12px"},
                     interval="preserveStartEnd",
                 ),
-                # data=AreaChart.current_selection,
                 data=SelectedRange.value,
                 width="100%",
                 height=280,
